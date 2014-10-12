@@ -144,7 +144,7 @@ app.get('/account/unlink/:provider', passportConf.isAuthenticated, userControlle
 //  .all(passportConf.isAuthenticated)
   .get(fileController.getUpload)
   .post(fileController.postUpload);
- app.route('/download')
+ app.route('/download/:uuid')
 //  .all(passportConf.isAuthenticated)
   .get(fileController.getDownload)
   .post(fileController.postDownload);

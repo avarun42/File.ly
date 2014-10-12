@@ -3,18 +3,18 @@ extends ../layout
 block content
   .page-header
     h3 Upload
-  form.form-horizontal(id='signup-form', method='POST')
+  form.form-horizontal(id='upload-form', method='POST')
     input(type='hidden', name='_csrf', value=_csrf)
     .form-group
       label.col-sm-3.control-label(for='email') Recipient Email
       .col-sm-7
         input.form-control(type='email', name='email', id='email', placeholder='Recipient Email', autofocus)
     .form-group
-      label.col-sm-3.control-label(for='password') File
+      label.col-sm-3.control-label(for='file') File
       .col-sm-7
         input.form-control(type='file', name='file', id='file', placeholder='File')
     .form-group
       .col-sm-offset-3.col-sm-7
         button.btn.btn-success(type='submit')
-          span.ion-person-add
+          span.ion-ios7-cloud-upload-outline
           | Upload

@@ -3,7 +3,9 @@ var async = require('async');
 var crypto = require('crypto');
 var nodemailer = require('nodemailer');
 var passport = require('passport');
+var UUIDgen = require('node-uuid');
 var User = require('../models/User');
+var Filely = require('../models/Filely')
 var secrets = require('../config/secrets');
 
 /**
@@ -26,54 +28,99 @@ exports.getUpload = function(req, res) {
 
 exports.postUpload = function(req, res, next) {
   req.assert('email', 'Email is not valid').isEmail();
-  req.assert('file', 'Password must be at least 4 characters long').len(4);
 
   var errors = req.validationErrors();
 
   if (errors) {
     req.flash('errors', errors);
-    return res.redirect('/../account/login');
+    return res.redirect('/upload');
   }
 
-  User.findOne({ email: req.body.email }, function(err, existingUser) {
-    user.save(function(err) {
-      if (err) return next(err);
-      req.logIn(user, function(err) {
-        if (err) return next(err);
-        res.redirect('/');
+  var authCode = Math.floor(Math.random() * (999999 - 100000 + 1) + 100000).toString();
+  var uuid = UUIDgen.v4();
+  var email = req.body.email;
+
+  var filely = new Filely({
+    email: email,
+    code: authCode,
+    uuid: uuid
+  })
+
+  async.waterfall([
+    // function(done) {
+    //   crypto.randomBytes(16, function(err, buf) {
+    //     var token = buf.toString('hex');
+    //     done(err, token);
+    //   });
+    // },
+    // function(token, done) {
+    //   User.findOne({ email: req.body.email.toLowerCase() }, function(err, user) {
+    //     // if (!user) {
+    //     //   user = new User({});
+    //     // }
+
+    //     // user.resetPasswordToken = token;
+    //     // user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+    //     // user.save(function(err) {
+    //     //   done(err, token);
+    //     // });
+    //   });
+    // },
+    function(done) {
+      var transporter = nodemailer.createTransport({
+        service: 'SendGrid',
+        auth: {
+          user: secrets.sendgrid.user,
+          pass: secrets.sendgrid.password
+        }
       });
-    });
+      var mailOptions = {
+        to: email,
+        from: 'mail@file.ly',
+        subject: 'Someone has sent you a file',
+        text: 'You are receiving this email because someone has sent you a file. This file is securely transferred and will be deleted upon first download.\n\n' +
+          'You should have also received an authorization code on your Pebble. This code will be required for successful access of the file.\n\n' +
+          'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+          'http://' + req.headers.host + '/download/' + uuid + '\n\n'
+      };
+      transporter.sendMail(mailOptions, function() {
+        req.flash('info', { msg: 'An e-mail has been sent to ' + email + ' with further instructions.' });
+        done('','done');
+      });
+    }
+  ], function(err) {
+    if (err) return next(err);
+    res.redirect('/upload');
   });
 };
 
 /**
  * GET /download
- * Login page.
+ * Download page.
  */
 
 exports.getDownload = function(req, res) {
   res.render('file/download', {
-    title: 'Download'
+    title: 'Download: ' + req.params.uuid
   });
 };
 
 /**
  * POST /download
  * Create a new local account.
- * @param email
- * @param password
+ * @param auth code
  */
 
 exports.postDownload = function(req, res, next) {
   req.assert('email', 'Email is not valid').isEmail();
-  req.assert('password', 'Password must be at least 4 characters long').len(4);
-  req.assert('confirmPassword', 'Passwords do not match').equals(req.body.password);
+  req.assert('uuid', 'ID does not exist').len(36);
 
   var errors = req.validationErrors();
 
   if (errors) {
     req.flash('errors', errors);
-    return res.redirect('/signup');
+    return res.redirect('/');
   }
 
   var user = new User({
@@ -419,52 +466,5 @@ exports.postForgot = function(req, res, next) {
     return res.redirect('/forgot');
   }
 
-  async.waterfall([
-    function(done) {
-      crypto.randomBytes(16, function(err, buf) {
-        var token = buf.toString('hex');
-        done(err, token);
-      });
-    },
-    function(token, done) {
-      User.findOne({ email: req.body.email.toLowerCase() }, function(err, user) {
-        if (!user) {
-          req.flash('errors', { msg: 'No account with that email address exists.' });
-          return res.redirect('/forgot');
-        }
-
-        user.resetPasswordToken = token;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-
-        user.save(function(err) {
-          done(err, token, user);
-        });
-      });
-    },
-    function(token, user, done) {
-      var transporter = nodemailer.createTransport({
-        service: 'SendGrid',
-        auth: {
-          user: secrets.sendgrid.user,
-          pass: secrets.sendgrid.password
-        }
-      });
-      var mailOptions = {
-        to: user.email,
-        from: 'hackathon@starter.com',
-        subject: 'Reset your password on Hackathon Starter',
-        text: 'You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n' +
-          'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
-          'http://' + req.headers.host + '/reset/' + token + '\n\n' +
-          'If you did not request this, please ignore this email and your password will remain unchanged.\n'
-      };
-      transporter.sendMail(mailOptions, function(err) {
-        req.flash('info', { msg: 'An e-mail has been sent to ' + user.email + ' with further instructions.' });
-        done(err, 'done');
-      });
-    }
-  ], function(err) {
-    if (err) return next(err);
-    res.redirect('/forgot');
-  });
+  
 };
