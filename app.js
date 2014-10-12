@@ -26,6 +26,7 @@ var connectAssets = require('connect-assets');
  */
 
 var homeController = require('./controllers/home');
+var fileController = require('./controllers/file');
 var userController = require('./controllers/user');
 var apiController = require('./controllers/api');
 var contactController = require('./controllers/contact');
@@ -134,6 +135,20 @@ app.post('/account/profile', passportConf.isAuthenticated, userController.postUp
 app.post('/account/password', passportConf.isAuthenticated, userController.postUpdatePassword);
 app.post('/account/delete', passportConf.isAuthenticated, userController.postDeleteAccount);
 app.get('/account/unlink/:provider', passportConf.isAuthenticated, userController.getOauthUnlink);
+
+/**
+ * File functionality routes.
+ */
+
+ app.route('/upload')
+//  .all(passportConf.isAuthenticated)
+  .get(fileController.getUpload)
+  .post(fileController.postUpload);
+ app.route('/download')
+//  .all(passportConf.isAuthenticated)
+  .get(fileController.getDownload)
+  .post(fileController.postDownload);
+
 
 /**
  * API examples routes.
