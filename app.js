@@ -93,11 +93,11 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
-app.use(function(req, res, next) {
+/*app.use(function(req, res, next) {
   // CSRF protection.
   if (_.contains(csrfExclude, req.path)) return next();
   csrf(req, res, next);
-});
+});*/
 app.use(function(req, res, next) {
   // Make user object available in templates.
   res.locals.user = req.user;

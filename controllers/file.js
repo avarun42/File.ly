@@ -7,6 +7,7 @@ var UUIDgen = require('node-uuid');
 var User = require('../models/User');
 var Filely = require('../models/Filely')
 var secrets = require('../config/secrets');
+var formidable = require('formidable');
 
 /**
  * GET /upload
@@ -27,26 +28,31 @@ exports.getUpload = function(req, res) {
  */
 
 exports.postUpload = function(req, res, next) {
-  req.assert('email', 'Email is not valid').isEmail();
+  /*req.assert('email', 'Email is not valid').isEmail();
 
   var errors = req.validationErrors();
 
   if (errors) {
     req.flash('errors', errors);
     return res.redirect('/upload');
-  }
+  }*/
 
   var authCode = Math.floor(Math.random() * (999999 - 100000 + 1) + 100000).toString();
   var uuid = UUIDgen.v4();
-  var email = req.body.email;
+  //var email = req.body.email;
 
-  var filely = new Filely({
-    email: email,
-    code: authCode,
-    uuid: uuid
-  })
-
-  async.waterfall([
+  var form = new formidable.IncomingForm();
+  
+  form.parse(req, function(err, fields, files) {
+    console.log(arguments);
+    var email = fields.email;
+    var filely = new Filely({
+      email: email,
+      code: authCode,
+      uuid: uuid,
+      file: files.file
+    });
+    async.waterfall([
     // function(done) {
     //   crypto.randomBytes(16, function(err, buf) {
     //     var token = buf.toString('hex');
@@ -93,6 +99,9 @@ exports.postUpload = function(req, res, next) {
     if (err) return next(err);
     res.redirect('/upload');
   });
+  
+  });
+ 
 };
 
 /**

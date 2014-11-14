@@ -3,7 +3,7 @@ extends ../layout
 block content
   .page-header
     h3 Upload
-  form.form-horizontal(id='upload-form', method='POST')
+  form.form-horizontal(id='upload-form', method='POST', enctype="multipart/form-data")
     input(type='hidden', name='_csrf', value=_csrf)
     .form-group
       label.col-sm-3.control-label(for='email') Recipient Email

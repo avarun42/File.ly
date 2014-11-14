@@ -1,20 +1,25 @@
 var mongoose = require('mongoose');
+var filePluginLib = require('mongoose-file');
+var filePlugin = filePluginLib.filePlugin;
+var make_upload_to_model = filePluginLib.make_upload_to_model;
 var bcrypt = require('bcrypt-nodejs');
 var crypto = require('crypto');
+var path = require('path');
+
+var uploads_base = path.join("~/Development", "filedb");
+var uploads = path.join(uploads_base, "uploads");
 
 var fileSchema = new mongoose.Schema({
   email: { type: String, lowercase: true },
   code: { type: String, lowercase: true },
   uuid: String,
-  file: {
-    name: { type: String, default: '' },
-    gender: { type: String, default: '' },
-    location: { type: String, default: '' },
-    website: { type: String, default: '' },
-    picture: { type: String, default: '' }
-  },
-
   expired: Boolean
+});
+
+fileSchema.plugin(filePlugin, {
+    name: "file",
+    upload_to: make_upload_to_model(uploads, 'files'),
+    relative_to: uploads_base
 });
 
 fileSchema.methods.gravatar = function(size) {
