@@ -59,7 +59,7 @@
     "formidable": "~1.0.15"
   },
   "devDependencies": {
-    "blessed": "^0.0.37",
+    "blessed": "^0.1.81",
     "chai": "^3.5.0",
     "mocha": "^2.5.3",
     "multiline": "^1.0.2",
