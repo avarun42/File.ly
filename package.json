@@ -62,7 +62,7 @@
     "blessed": "^0.0.37",
     "chai": "^1.9.1",
     "mocha": "^1.21.4",
-    "multiline": "^0.3.4",
+    "multiline": "^2.0.0",
     "supertest": "^0.13.0"
   }
 }
