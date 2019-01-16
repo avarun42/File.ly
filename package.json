@@ -63,6 +63,6 @@
     "chai": "^1.9.1",
     "mocha": "^1.21.4",
     "multiline": "^0.3.4",
-    "supertest": "^3.4.0"
+    "supertest": "^3.4.1"
   }
 }
